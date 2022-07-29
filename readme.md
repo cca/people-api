@@ -1,6 +1,6 @@
 # People API for CCA Portal
 
-Use the "people" Elasticsearch endpoint as a public API from Portal. The Instructional Support team has a need to pull accurate lists of program administrators (faculty chairs & co-chairs, staff program managers & senior managers) complete with contact information. Portal has this data and exposes it in a machine-readable format.
+Use the "people" Elasticsearch endpoint as a public API [from Portal](https://portal.cca.edu/people/). The Instructional Support team has a need to pull accurate lists of program administrators (faculty chairs & co-chairs, staff program managers & senior managers) complete with contact information. Portal has this data and exposes it in a machine-readable format.
 
 ## License
 
