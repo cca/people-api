@@ -25,13 +25,21 @@ query = {
     "sort": [{"_score": "desc"}, {"get_last_name_filter": "asc"}],
 }
 
+def print_person(p):
+    print(p["full_name"], p["username"] + '@cca.edu', p["positions"][0])
+
 headers = {
     "accept": "application/json",
     "content-type": "application/json",
 }
 r = requests.post(url, json=query, headers=headers)
 if r.status_code == 200:
-    print(json.dumps(r.json()))
+    data = r.json()
+    for result in data["hits"]["hits"]:
+        person = result["_source"]
+        for position in person["positions"]:
+            if "program manager" in position.lower() or "senior manager" in position.lower():
+                print_person(person)
 else:
     print('ERROR: HTTP {}'.format(r.status_code))
     print(r.text)
