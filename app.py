@@ -26,7 +26,11 @@ query = {
 }
 
 def print_person(p):
+    # some people don't have emails? but everyone has a username
+    # @TODO filter to the right PM/Chair position in case someone has multiple
+    # but no in the staff data does
     print(p["full_name"], p["username"] + '@cca.edu', p["positions"][0])
+    # @TODO parse academic program out of positions string
 
 headers = {
     "accept": "application/json",
