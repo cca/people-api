@@ -56,11 +56,19 @@ def chair(p):
     programs = set()
     for pos in p["positions"]:
         if "chair" in pos.lower():
-            position = pos.split(", ")[0]
-            program = pos.split(", ")[1]
-            # trim " Program" off the end of string
-            program = pgram.sub('', program)
-            programs.add(program)
+            # handle Sandrine Lebas exception: "Chair. Industrial Design Program, Industrial Design Program"
+            # https://portal.cca.edu/people/slebas/
+            if "." in pos:
+                position = pos.split(". ")[0]
+                program = pos.split(", ")[1]
+                program = pgram.sub('', program)
+                programs.add(program)
+            else:
+                position = pos.split(", ")[0]
+                program = pos.split(", ")[1]
+                # trim " Program" off the end of string
+                program = pgram.sub('', program)
+                programs.add(program)
 
     return [ p["full_name"], p["username"] + '@cca.edu', position, '; '.join(list(programs)) ]
 
