@@ -33,7 +33,13 @@ def pm(p):
     # parse out the academic program, positions look like this
     # "Program Manager: Humanities & Sciences, Writing & Literature and Graduate Comics, Humanities and Sciences"
     # so we ignore everything _before_ the first comma & _after_ the last comma
-    program = position.split(', ')[1]
+    pos_list = position.split(', ')
+    # handle Kris McGhee exception: programs were split with a comma & not an "and"
+    # https://portal.cca.edu/people/kris.mcghee/
+    if len(pos_list) == 4:
+        program = re.sub('.*:', '', '; '.join(pos_list[1:3]))
+    else:
+        program = position.split(', ')[1].replace(" and ", "; ")
     position = manager.match(position)[0]
 
     # some people don't have emails? but everyone has a username
