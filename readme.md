@@ -23,6 +23,8 @@ Examples:
   python app.py --staff > data/stf.json # write complete staff search JSON to file
 ```
 
+The command `pipenv run build` copies the latest data for staff and faculty to our clipboard, with no header row, then opens the Google Sheet that the Instructional Support team uses where we can paste in the updated data.
+
 ## License
 
 [ECL-2.0](https://opensource.org/licenses/ECL-2.0)
