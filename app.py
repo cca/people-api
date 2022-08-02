@@ -6,11 +6,19 @@ import sys
 
 import requests
 
-parser = argparse.ArgumentParser(description='Pull program chair and manager information from the Portal People Directory. Writes CSV text to stdout by default.')
+examples = '''Examples:
+  python app.py -s -f > data/out.csv # print a CSV of all PMs & Chairs
+  python app.py --staff > data/stf.json # write complete staff search JSON to file
+'''
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description='Pull program chair and manager information from the Portal People Directory. Writes CSV text to stdout by default.', epilog=examples)
 parser.add_argument("-s, --staff", dest="staff", action="store_true", help='whether to search staff profiles')
 parser.add_argument("-f, --faculty", dest="faculty", action="store_true", help='whether to search faculty profiles')
+parser.add_argument("-n, --no-header", dest="no_header", action="store_true", help='omit the CSV header row')
 parser.add_argument("-j, --json", dest="json", action="store_true", help='write full JSON data from Portal to stdout. Only works with one of --staff or --faculty.')
 args = parser.parse_args()
+
+if args.staff and args.faculty and args.json:
+    raise Exception("JSON output only works with staff OR faculty, not with both.")
 
 url = "https://portal.cca.edu/search/people/_search"
 headers = {
@@ -19,7 +27,7 @@ headers = {
 }
 manager = re.compile('[a-z]* manager', flags=re.I)
 pgram = re.compile(' Program', flags=re.I)
-writer = csv.writer(sys.stdout)
+writer = csv.writer(sys.stdout, delimiter='\t')
 
 
 def pm(p):
@@ -76,6 +84,10 @@ def handle_json(d):
     if args.json:
             print(json.dumps(d, indent=2))
             exit(0)
+
+# if we're printing to CSV, add a header row
+if not args.json and not args.no_header:
+    writer.writerow(['Name', 'Email', 'Role', 'Program(s)'])
 
 # staff: get program managers
 if args.staff:
