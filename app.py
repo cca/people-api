@@ -8,7 +8,7 @@ import requests
 
 examples = '''Examples:
   python app.py -s -f > data/out.csv # print a CSV of all PMs & Chairs
-  python app.py --staff > data/stf.json # write complete staff search JSON to file
+  python app.py --staff --json > data/stf.json # write complete staff search JSON to file
 '''
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description='Pull program chair and manager information from the Portal People Directory. Writes CSV text to stdout by default.', epilog=examples)
 parser.add_argument("-s, --staff", dest="staff", action="store_true", help='whether to search staff profiles')
