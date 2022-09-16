@@ -7,11 +7,15 @@ import sys
 import requests
 
 examples = '''Examples:
-  python app.py -s -f > data/out.csv # print a CSV of all PMs & Chairs
+  python app.py -s -f > data/out.csv # create a CSV of all PMs & Chairs
   python app.py --staff --json > data/stf.json # write complete staff search JSON to file
+  python app.py --pm # print only PM staff to stdout
 '''
-parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description='Pull program chair and manager information from the Portal People Directory. Writes CSV text to stdout by default.', epilog=examples)
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description='Pull program chair, program manager, and studio manager information from the Portal People Directory. Writes CSV text to stdout by default.', epilog=examples)
 parser.add_argument("-s, --staff", dest="staff", action="store_true", help='whether to search staff profiles')
+group = parser.add_mutually_exclusive_group()
+group.add_argument("--sm", dest="sm", action="store_true", help='search staff but only for Studio Managers')
+group.add_argument("--pm", dest="pm", action="store_true", help='search staff but only for Program Managers')
 parser.add_argument("-f, --faculty", dest="faculty", action="store_true", help='whether to search faculty profiles')
 parser.add_argument("-n, --no-header", dest="no_header", action="store_true", help='omit the CSV header row')
 parser.add_argument("-j, --json", dest="json", action="store_true", help='write full JSON data from Portal to stdout. Only works with one of --staff or --faculty.')
@@ -54,6 +58,18 @@ def pm(p):
     return [ p["full_name"], p["username"] + '@cca.edu', position, program ]
 
 
+def sm(p):
+    # find useful data in person record for studio managers
+
+    # program is hidden in first position somewhere in a wildly inconsistent manner
+    # but if we can strip out "Studio Manager" and "Studio Operations" then program
+    # is _usually_ the only thing left
+    program = p["positions"][0].replace(', Studio Operations', '').replace('Studio Manager', '').replace('Studio Operations Manager', '').strip(',').strip(' -').strip()
+
+    # some people don't have emails? but everyone has a username
+    return [ p["full_name"], p["username"] + '@cca.edu', 'Studio Manager', program ]
+
+
 def chair(p):
     # find useful data in person record for program chair, co-chair
 
@@ -80,6 +96,7 @@ def chair(p):
 
     return [ p["full_name"], p["username"] + '@cca.edu', position, '; '.join(list(programs)) ]
 
+
 def handle_json(d):
     if args.json:
             print(json.dumps(d, indent=2))
@@ -90,7 +107,7 @@ if not args.json and not args.no_header:
     writer.writerow(['Name', 'Email', 'Role', 'Program(s)'])
 
 # staff: get program managers
-if args.staff:
+if args.staff or args.sm or args.pm:
     query = {
         "query": {
             "simple_query_string": {
@@ -118,10 +135,13 @@ if args.staff:
         handle_json(data)
         for result in data["hits"]["hits"]:
             person = result["_source"]
-            for position in person["positions"]:
-                if "program manager" in position.lower() or "senior manager" in position.lower():
-                    writer.writerow(pm(person))
-                    break
+            if (args.staff or args.sm) and person['staff_primary_department'].lower() == 'studio operations':
+                writer.writerow(sm(person))
+            elif (args.staff or args.pm):
+                for position in person["positions"]:
+                    if "program manager" in position.lower() or "senior manager" in position.lower():
+                        writer.writerow(pm(person))
+                        break
     else:
         print('ERROR: HTTP {}'.format(r.status_code))
         print(r.text)
