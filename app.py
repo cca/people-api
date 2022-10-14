@@ -165,7 +165,6 @@ if args.faculty:
                 "default_operator": "AND",
             }
         },
-        # other filters are Faculty and Student
         "post_filter": {"term": {"usertype_filter": "Faculty"}},
         "size": 60,
         "sort": [{"_score": "desc"}, {"get_last_name_filter": "asc"}],
