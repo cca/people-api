@@ -16,7 +16,7 @@ let url = "https://portal.cca.edu/search/people/_search"
 
 function pm(p) {
   // find useful data in person record for program managers
-  let position = p.positions.filter(pos => pos.toLowerCase() === "program manager" || pos.toLowerCase() === "senior manager")[0]
+  let position = p.positions.filter(pos => pos.toLowerCase().match("program manager") || pos.toLowerCase().match("senior manager"))[0]
   // parse out the academic program, positions look like this
   // "Program Manager: Humanities & Sciences, Writing & Literature and Graduate Comics, Humanities and Sciences"
   // so we ignore everything _before_ the first comma & _after_ the last comma
@@ -58,7 +58,7 @@ function chair(p) {
     if (pos.toLowerCase().match("chair")) {
       // handle Sandrine Lebas exception: "Chair. Industrial Design Program, Industrial Design Program"
       // https://portal.cca.edu/people/slebas/
-      if (pos.match("\.")) {
+      if (pos.match(/\./)) {
         position =  pos.split(". ")[0]
         program = pos.split(", ")[1]
         // trim " Program" off the end of string
@@ -145,7 +145,7 @@ function getStaffData() {
     let person = d._source
     if (person.staff_primary_department.toLowerCase() === 'studio operations') {
       staff.push(sm(person))
-    } else if (person.positions.some(p => p.toLowerCase() === "senior manager" || p.toLowerCase() === "program manager")) {
+    } else if (person.positions.some(p => p.toLowerCase().match("senior manager") || p.toLowerCase().match("program manager"))) {
       staff.push(pm(person))
     }
   })
