@@ -4,7 +4,7 @@ Use the "people" Elasticsearch endpoint as a public API [from Portal](https://po
 
 ## Google Apps Scripts
 
-This project is [embedded in a spreadsheet](https://docs.google.com/spreadsheets/d/15Don1ZwZvkWeo2fhyUGCtQ54ASLLh3GbTF6AO-toYR4/edit?usp=sharing) as [an apps script](https://script.google.com/home/projects/1oYhIUeOs1OHI_UL4XfgEBenps0M_y2JKE8K3GDpgiiulkrBL0aKGCBnh/edit). It uses an "on open" trigger to add a "Refresh Data" menu to the spreadsheet, which lets us pull in data fresh from Portal. The "appsript.js" file is the source code of this program, minus the "on open" trigger which must be configured manually.
+This project is [embedded in a spreadsheet](https://docs.google.com/spreadsheets/d/15Don1ZwZvkWeo2fhyUGCtQ54ASLLh3GbTF6AO-toYR4/edit?usp=sharing) as [an apps script](https://script.google.com/home/projects/1oYhIUeOs1OHI_UL4XfgEBenps0M_y2JKE8K3GDpgiiulkrBL0aKGCBnh/edit). It uses an "on open" trigger to add a "Refresh Data" menu to the spreadsheet, which lets us pull in data fresh from Portal. The "appscript.js" file is the source code of this program, minus the "on open" trigger which must be configured manually.
 
 ## Usage
 
