@@ -184,5 +184,5 @@ function addPeopleToSheet(people) {
 
 function onOpen() {
   let ss = SpreadsheetApp.getActiveSpreadsheet()
-  ss.addMenu("Refresh Data", [{name: "Update spreadsheet from Portal (experimental)", functionName: "getPeopleData"}])
+  ss.addMenu("Refresh Data", [{name: "Update spreadsheet from Portal", functionName: "getPeopleData"}])
 }
