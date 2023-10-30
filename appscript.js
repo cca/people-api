@@ -53,7 +53,7 @@ function chair(p) {
   // "Assistant Chair, Illustration Program"
   // let's hope no one ever has a chair _and_ asst. chair role
   // create a list of all programs, set gives free deduplication
-  let programs = new Set()
+  let position, programs = new Set()
   p.positions.forEach(pos => {
     if (pos.toLowerCase().match("chair")) {
       // handle Sandrine Lebas exception: "Chair. Industrial Design Program, Industrial Design Program"
@@ -84,9 +84,7 @@ let staff_query = {
           "query": "manager",
           "fields": [
               "full_name^5",
-              "get_faculty_programs",
               "positions^5",
-              "get_majors",
               "get_staff_departments",
               "username",
           ],
@@ -107,8 +105,6 @@ let staff_query = {
                 "full_name^5",
                 "get_faculty_programs",
                 "positions^5",
-                "get_majors",
-                "get_staff_departments",
                 "username",
             ],
             "default_operator": "AND",
@@ -179,7 +175,8 @@ function addPeopleToSheet(people) {
   sheet.clear()
   // header row
   sheet.appendRow(fields)
-  people.forEach(p => sheet.appendRow(p))
+  // update whole range at once instead of iterating with sheet.appendRow()
+  sheet.getRange(2, 1, people.length, people[0].length).setValues(people)
 }
 
 function onOpen() {
