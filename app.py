@@ -123,23 +123,19 @@ def chair(p):
     # "Assistant Chair, Illustration Program"
     # let's hope no one ever has a chair _and_ asst. chair role
     # create a list of all programs, set gives free deduplication
-    programs = set()
     for pos in p["positions"]:
         if "chair" in pos.lower():
             # handle Sandrine Lebas exception: "Chair. Industrial Design Program, Industrial Design Program"
             # https://portal.cca.edu/people/slebas/
             if "." in pos:
                 position = pos.split(". ")[0]
-                program = pos.split(", ")[1]
-                program = pgram.sub("", program)
-                programs.add(program)
             else:
                 position = pos.split(", ")[0]
-                program = pos.split(", ")[1]
-                # trim " Program" off the end of string
-                program = pgram.sub("", program)
-                programs.add(program)
+            break
 
+    programs = set(
+        [p.replace(" Program", "") for p in p["get_faculty_programs_filter"]]
+    )
     return [
         p["full_name"],
         p["username"] + "@cca.edu",
@@ -167,9 +163,7 @@ if args.staff or args.sm or args.pm:
                 "query": "manager",
                 "fields": [
                     "full_name^5",
-                    "get_faculty_programs",
                     "positions^5",
-                    "get_majors",
                     "get_staff_departments",
                     "username",
                 ],
@@ -215,8 +209,6 @@ if args.faculty:
                     "full_name^5",
                     "get_faculty_programs",
                     "positions^5",
-                    "get_majors",
-                    "get_staff_departments",
                     "username",
                 ],
                 "default_operator": "AND",
