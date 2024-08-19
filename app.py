@@ -1,5 +1,6 @@
 import argparse
 import csv
+import glob
 import json
 import re
 import sys
@@ -67,7 +68,9 @@ headers = {
     "accept": "application/json",
     "content-type": "application/json",
 }
-manager = re.compile("[a-z]* manager", flags=re.I)
+# regex patterns for matching positions
+global pm_pattern
+pm_pattern = re.compile("(senior )?(program|project) manager", flags=re.I)
 pgram = re.compile(" Program", flags=re.I)
 writer = csv.writer(sys.stdout, delimiter="\t")
 
@@ -77,20 +80,20 @@ def pm(p):
 
     # handle multiple positions
     for pos in p["positions"]:
-        if "program manager" in pos.lower() or "senior manager" in pos.lower():
+        if pm_pattern.match(pos):
             position = pos
+            break
 
     # parse out the academic program, positions look like this
-    # "Program Manager: Humanities & Sciences, Writing & Literature and Graduate Comics, Humanities and Sciences"
-    # so we ignore everything _before_ the first comma & _after_ the last comma
-    pos_list = position.split(", ")
-    # handle Kris McGhee exception: programs were split with a comma & not an "and"
-    # https://portal.cca.edu/people/kris.mcghee/
-    if len(pos_list) == 4:
-        program = re.sub(".*:", "", "; ".join(pos_list[1:3]))
+    # "Senior Project Manager, Humanities & Sciences, Academic Affairs"
+    # Handle "Senior Project Manager for Department" exception:
+    if " for " in position:
+        pos_prog = position.split(" for ")
+        position = pos_prog[0]
+        program = pos_prog[1].split(", ")[0]
     else:
-        program = position.split(", ")[1].replace(" and ", "; ")
-    position = manager.match(position)[0]
+        program = position.split(", ")[1]
+        position = position.split(", ")[0]
 
     # some people don't have emails? but everyone has a username
     return [p["full_name"], p["username"] + "@cca.edu", position, program]
@@ -125,12 +128,7 @@ def chair(p):
     # create a list of all programs, set gives free deduplication
     for pos in p["positions"]:
         if "chair" in pos.lower():
-            # handle Sandrine Lebas exception: "Chair. Industrial Design Program, Industrial Design Program"
-            # https://portal.cca.edu/people/slebas/
-            if "." in pos:
-                position = pos.split(". ")[0]
-            else:
-                position = pos.split(", ")[0]
+            position = pos.split(", ")[0]
             break
 
     programs = set(
@@ -187,10 +185,7 @@ if args.staff or args.sm or args.pm:
                 writer.writerow(sm(person))
             elif args.staff or args.pm:
                 for position in person["positions"]:
-                    if (
-                        "program manager" in position.lower()
-                        or "senior manager" in position.lower()
-                    ):
+                    if pm_pattern.match(position):
                         writer.writerow(pm(person))
                         break
     else:

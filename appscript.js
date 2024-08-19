@@ -10,26 +10,25 @@ let url = "https://portal.cca.edu/search/people/_search"
         accept: 'application/json'
       }
     }
-  , manager = /[a-z]* manager/i
+  , pm_pattern = /(senior )?(program|project) manager/i
   , pgram = / Program/i
   , fields = ["Name","Email","Role","Program(s) or Department"];
 
 function pm(p) {
   // find useful data in person record for program managers
-  let position = p.positions.filter(pos => pos.toLowerCase().match("program manager") || pos.toLowerCase().match("senior manager"))[0]
-  // parse out the academic program, positions look like this
-  // "Program Manager: Humanities & Sciences, Writing & Literature and Graduate Comics, Humanities and Sciences"
-  // so we ignore everything _before_ the first comma & _after_ the last comma
+  let position = p.positions.filter(pos => pos.match(pm_pattern))[0]
   let program = null
-  let pos_list = position.split(', ')
-  // handle Kris McGhee exception: programs were split with a comma & not an "and"
-  // https://portal.cca.edu/people/kris.mcghee/
-  if (pos_list.length === 4) {
-    program = pos_list[1].replace(/.*:/, '').trim() + '; ' + pos_list[2]
+  // parse out the academic program, positions look like this
+  // "Project Manager, Humanities & Sciences, Academic Affairs"
+  // Handle "Senior Project Manager for Department" exception:
+  if (position.match(" for ")) {
+    let pos_prog = position.split(" for ")
+    position = pos_prog[0]
+    program = pos_prog[1].split(", ")[0]
   } else {
-    program = position.split(', ')[1].replace(" and ", "; ")
+    program = position.split(', ')[1]
+    position = position.match(pm_pattern)[0]
   }
-  position = position.match(manager)[0]
 
   // some people don't have emails? but everyone has a username
   return [p.full_name, p.username + '@cca.edu', position, program ]
@@ -56,21 +55,11 @@ function chair(p) {
   let position, programs = new Set()
   p.positions.forEach(pos => {
     if (pos.toLowerCase().match("chair")) {
-      // handle Sandrine Lebas exception: "Chair. Industrial Design Program, Industrial Design Program"
-      // https://portal.cca.edu/people/slebas/
-      if (pos.match(/\./)) {
-        position =  pos.split(". ")[0]
-        program = pos.split(", ")[1]
-        // trim " Program" off the end of string
-        program = program.replace(pgram, '')
-        programs.add(program)
-      } else {
         position = pos.split(", ")[0]
         program = pos.split(", ")[1]
         // trim " Program" off the end of string
         program = program.replace(pgram, '')
         programs.add(program)
-      }
     }
   })
 
@@ -141,7 +130,7 @@ function getStaffData() {
     let person = d._source
     if (person.staff_primary_department.toLowerCase() === 'studio operations') {
       staff.push(sm(person))
-    } else if (person.positions.some(p => p.toLowerCase().match("senior manager") || p.toLowerCase().match("program manager"))) {
+    } else if (person.positions.some(p => p.match(pm_pattern))) {
       staff.push(pm(person))
     }
   })
