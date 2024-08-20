@@ -1,9 +1,6 @@
 import argparse
-import csv
-import glob
 import json
 import re
-import sys
 
 import requests
 
@@ -71,8 +68,7 @@ headers = {
 # regex patterns for matching positions
 global pm_pattern
 pm_pattern = re.compile("(senior )?(program|project) manager", flags=re.I)
-pgram = re.compile(" Program", flags=re.I)
-writer = csv.writer(sys.stdout, delimiter="\t")
+rows = []
 
 
 def pm(p):
@@ -148,9 +144,21 @@ def handle_json(d):
         exit(0)
 
 
-# if we're printing to CSV, add a header row
+def table(rows):
+    """Print a table to console with aligned columns. We ignore the length of
+    the last column, which is the programs column & sometimes so long it breaks
+    across lines, since it doesn't matter for alignment."""
+    col_widths: list[int] = [
+        max(len(str(value)) + 1 for value in col) for col in zip(*rows)
+    ]
+    col_widths[-1] = 0
+    for row in rows:
+        print("".join(f"{value:<{width}}" for value, width in zip(row, col_widths)))
+
+
+# if we're printing, add a header row
 if not args.json and not args.no_header:
-    writer.writerow(["Name", "Email", "Role", "Program(s)"])
+    rows.append(["Name", "Email", "Role", "Program(s)"])
 
 # staff: get program managers
 if args.staff or args.sm or args.pm:
@@ -182,11 +190,11 @@ if args.staff or args.sm or args.pm:
             if (args.staff or args.sm) and person[
                 "staff_primary_department"
             ].lower() == "studio operations":
-                writer.writerow(sm(person))
+                rows.append(sm(person))
             elif args.staff or args.pm:
                 for position in person["positions"]:
                     if pm_pattern.match(position):
-                        writer.writerow(pm(person))
+                        rows.append(pm(person))
                         break
     else:
         print("ERROR: HTTP {}".format(r.status_code))
@@ -221,9 +229,12 @@ if args.faculty:
             person = result["_source"]
             for position in person["positions"]:
                 if "chair" in position.lower():
-                    writer.writerow(chair(person))
+                    rows.append(chair(person))
                     break
     else:
         print("ERROR: HTTP {}".format(r.status_code))
         print(r.text)
         r.raise_for_status()
+
+if len(rows) > 0 and not args.json:
+    table(rows)
