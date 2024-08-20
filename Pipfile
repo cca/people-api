@@ -11,6 +11,3 @@ black = "*"
 
 [requires]
 python_version = "3.9"
-
-[scripts]
-build = "bash -c 'python app.py -s -f -n | pbcopy && open \"https://docs.google.com/spreadsheets/d/15Don1ZwZvkWeo2fhyUGCtQ54ASLLh3GbTF6AO-toYR4/edit#gid=0\"'"
