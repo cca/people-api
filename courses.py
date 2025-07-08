@@ -20,11 +20,7 @@ query = {
     #         ]
     #     }
     # },
-    "post_filter": {
-        "term": {
-            "get_term_filter": "Spring 2025"
-        }
-    },
+    "post_filter": {"term": {"get_term_filter": "Fall 2025"}},
     "size": 10,
     "suggest": {
         "text": "",
@@ -38,26 +34,18 @@ query = {
                     {
                         "field": "get_section_description",
                         "suggest_mode": "always",
-                        "min_word_length": 1
+                        "min_word_length": 1,
                     }
-                ]
+                ],
             }
-        }
+        },
     },
     "sort": [
-        {
-            "_score": "desc"
-        },
-        {
-            "get_subject_filter": "asc"
-        },
-        {
-            "get_course_number_filter": "asc"
-        },
-        {
-            "section_number_filter": "asc"
-        }
-    ]
+        {"_score": "desc"},
+        {"get_subject_filter": "asc"},
+        {"get_course_number_filter": "asc"},
+        {"section_number_filter": "asc"},
+    ],
 }
 r = requests.post(url, json=query, headers=headers)
 r.raise_for_status()
