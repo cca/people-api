@@ -1,13 +1,14 @@
 import json
+from typing import Any
 
 import requests
 
 url = "https://portal.cca.edu/search/courses/_search"
-headers = {
+headers: dict[str, str] = {
     "accept": "application/json",
     "content-type": "application/json",
 }
-query = {
+query: dict[str, Any] = {
     # "query": {
     #     "simple_query_string": {
     #         "query": "SEARCH TEXT HERE",
@@ -47,7 +48,7 @@ query = {
         {"section_number_filter": "asc"},
     ],
 }
-r = requests.post(url, json=query, headers=headers)
+r: requests.Response = requests.post(url, json=query, headers=headers)
 r.raise_for_status()
-data = r.json()
+data: dict[str, Any] = r.json()
 print(json.dumps(data, indent=2))

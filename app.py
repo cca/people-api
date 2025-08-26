@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+from typing import Any
 
 import requests
 
@@ -67,11 +68,11 @@ headers = {
 }
 # regex patterns for matching positions
 global pm_pattern
-pm_pattern = re.compile("(senior )?(program|project) manager", flags=re.I)
-rows = []
+pm_pattern: re.Pattern = re.compile("(senior )?(program|project) manager", flags=re.I)
+rows: list[list[str]] = []
 
 
-def pm(p):
+def pm(p) -> list[str]:
     # find useful data in person record for program managers
 
     # handle multiple positions
@@ -95,7 +96,7 @@ def pm(p):
     return [p["full_name"], p["username"] + "@cca.edu", position, program]
 
 
-def sm(p):
+def sm(p) -> list[str]:
     # find useful data in person record for studio managers
 
     # program is hidden in first position somewhere in a wildly inconsistent manner
@@ -115,7 +116,7 @@ def sm(p):
     return [p["full_name"], p["username"] + "@cca.edu", "Studio Manager", program]
 
 
-def chair(p):
+def chair(p) -> list[str]:
     # find useful data in person record for program chair, co-chair
 
     # chairs tend to have multiple positions, they look like this:
@@ -138,13 +139,13 @@ def chair(p):
     ]
 
 
-def handle_json(d):
+def handle_json(d) -> None:
     if args.json:
         print(json.dumps(d, indent=2))
         exit(0)
 
 
-def table(rows):
+def table(rows) -> None:
     """Print a table to console with aligned columns. We ignore the length of
     the last column, which is the programs column & sometimes so long it breaks
     across lines, since it doesn't matter for alignment."""
@@ -162,7 +163,7 @@ if not args.json and not args.no_header:
 
 # staff: get program managers
 if args.staff or args.sm or args.pm:
-    query = {
+    query: dict[str, Any] = {
         "query": {
             "simple_query_string": {
                 # search term
@@ -181,9 +182,9 @@ if args.staff or args.sm or args.pm:
         "size": 60,
         "sort": [{"_score": "desc"}, {"get_last_name_filter": "asc"}],
     }
-    r = requests.post(url, json=query, headers=headers)
+    r: requests.Response = requests.post(url, json=query, headers=headers)
     if r.status_code == 200:
-        data = r.json()
+        data: dict[str, Any] = r.json()
         handle_json(data)
         for result in data["hits"]["hits"]:
             person = result["_source"]
