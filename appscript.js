@@ -1,4 +1,5 @@
 // https://github.com/cca/people-api
+// https://developers.google.com/apps-script/reference/spreadsheet
 
 let url = "https://portal.cca.edu/search/people/_search"
   , http_options = {
@@ -152,6 +153,25 @@ function getFacultyData() {
 }
 
 /**
+ * Add a label and timestamp to the active sheet on the given cell
+ * (by default label in E1 and timestamp in E2).
+ * @param {number} col - column number (1-indexed) to add timestamp to
+ * @param {number} row - row number (1-indexed) to add timestamp to
+ *
+ * @return undefined (no return value)
+ */
+function addTimestamp(row = 1, col = 5) {
+  let sheet = SpreadsheetApp.getActiveSheet()
+  let labelCell = sheet.getRange(row, col)
+  labelCell.setValue("Last Updated")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("right")
+  let tsCell = sheet.getRange(row + 1, col)
+  tsCell.setValue(new Date())
+    .setNumberFormat("yyyy-mm-dd hh:mm:ss")
+}
+
+/**
  * Clears worksheet and inserts people rows
  *
  * @param {array} Array of people rows
@@ -166,6 +186,8 @@ function addPeopleToSheet(people) {
   sheet.appendRow(fields)
   // update whole range at once instead of iterating with sheet.appendRow()
   sheet.getRange(2, 1, people.length, people[0].length).setValues(people)
+  // Update "Last Updated" timestamp in E1/E2
+  addTimestamp()
 }
 
 function onOpen() {
